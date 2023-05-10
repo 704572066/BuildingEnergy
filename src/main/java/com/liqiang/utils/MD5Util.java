@@ -1,6 +1,7 @@
 package com.liqiang.utils;
 
 import java.security.MessageDigest;
+import java.util.Random;
 
 /**
  * message-digest algorithm 5（信息-摘要算法）
@@ -16,6 +17,7 @@ public class MD5Util {
         String pwd = "123456";
         System.out.println("加密前： " + pwd);
         System.err.println("加密后： " + MD5Util.getMD5(pwd));
+        System.out.println(getRandomSequence(10));
     }
 
     /**
@@ -67,5 +69,23 @@ public class MD5Util {
             md5str.append(Integer.toHexString(digital));
         }
         return md5str.toString().toUpperCase();
+    }
+
+    public static String getRandomSequence(int length) {
+        String val = "";
+        Random random = new Random();
+        //参数length，表示生成几位随机数
+        for (int i = 0; i < length; i++) {
+            String charOrNum = random.nextInt(2) % 2 == 0 ? "char" : "num";
+            //输出字母还是数字
+            if ("char".equalsIgnoreCase(charOrNum)) {
+                //输出是大写字母还是小写字母
+                int temp = random.nextInt(2) % 2 == 0 ? 65 : 97;
+                val += (char) (random.nextInt(26) + temp);
+            } else if ("num".equalsIgnoreCase(charOrNum)) {
+                val += String.valueOf(random.nextInt(10));
+            }
+        }
+        return val;
     }
 }

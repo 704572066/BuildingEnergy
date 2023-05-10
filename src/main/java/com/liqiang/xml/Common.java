@@ -1,10 +1,13 @@
 package com.liqiang.xml;
 
+import lombok.Getter;
+
 import javax.xml.bind.annotation.*;
 import java.util.List;
 
 @XmlRootElement(name = "common")
 @XmlAccessorType(XmlAccessType.FIELD)
+@Getter
 public class Common {
 
     public Common() {

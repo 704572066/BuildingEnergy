@@ -39,7 +39,7 @@ public class ReportDataTask implements TimerTask {
             typeList.add("report");
 
 //            Report report = new Report("result", "pass", "20230509152030");
-            Report report = new Report(new Common("330400A001", "01", typeList), new Data("1", "no", "20230509170530", "report", meterList));
+            Report report = new Report(new Common("330400A001", "01", typeList), new ReplyData("1", "no", "20230509170530", "report", meterList));
             //转换成xml字符串
             String xmlStr = XmlUtil.beanToXml(report, "UTF-8");
             //AES加密

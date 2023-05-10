@@ -18,10 +18,16 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class ClientHandle extends ChannelInboundHandlerAdapter {
+
 	Timer timer = new HashedWheelTimer();
+
 	private static final long INTERVAL_SECONDS = 5; // 定时任务触发间隔
+
+	private String authenticationKey = "12345";
+
 	Client client;
-    public  ClientHandle(Client client) {
+
+	public  ClientHandle(Client client) {
 		// TODO Auto-generated constructor stub
        this.client=client;
     }
@@ -119,7 +125,7 @@ public class ClientHandle extends ChannelInboundHandlerAdapter {
 			Sequence sequence = XmlUtil.XMLToJavaBean(xmlStr,Sequence.class);
 //			System.out.println(sequence);
 			//计算MD5值发送给服务端
-            String authenticationKey = "12345";
+//            String authenticationKey = "12345";
             String md5Str = MD5Util.getMD5(authenticationKey + sequence.getId_validate().getSequence());
 			List<String> typeList = new ArrayList<>();
 			typeList.add("md5");

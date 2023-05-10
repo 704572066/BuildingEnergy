@@ -32,6 +32,12 @@ public class Server implements Runnable {
 		clients.add(client);
 	}
 
+	public void removeClient(ChannelHandlerContext client) {
+		if(clients.contains(client)) {
+			clients.remove(client);
+		}
+	}
+
 	@Override
 	public void run() {
 		/**

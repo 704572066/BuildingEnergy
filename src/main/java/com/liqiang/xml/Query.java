@@ -7,13 +7,13 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement(name = "root")
 @XmlAccessorType(XmlAccessType.FIELD)
-public class Report {
+public class Query {
 
-    public Report() {
+    public Query() {
 
     }
 
-    public Report(Common common, ReplyData data) {
+    public Query(Common common, Data data) {
         this.common = common;
         this.data = data;
     }
@@ -21,5 +21,5 @@ public class Report {
     private Common common;
 
     @XmlElement(name = "data")
-    private ReplyData data;
+    private Data data;
 }

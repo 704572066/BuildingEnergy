@@ -2,10 +2,7 @@ package com.liqiang.nettyTest2;
 
 import com.liqiang.SimpeEcode.Message;
 import com.liqiang.SimpeEcode.MessageHead;
-import com.liqiang.utils.AESUtil;
-import com.liqiang.utils.ByteUtil;
-import com.liqiang.utils.CBCUtil;
-import com.liqiang.utils.XmlUtil;
+import com.liqiang.utils.*;
 import com.liqiang.xml.*;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -20,9 +17,16 @@ public class ServerHandle extends ChannelInboundHandlerAdapter {
 
 	private Server server;
 
+	//随机序列
+	private String randomSequence;
+
+	//认证密钥
+	private String authenticationKey = "12345";
+
 	public ServerHandle(Server server) {
 		// TODO Auto-generated constructor stub
 		this.server = server;
+		this.randomSequence = MD5Util.getRandomSequence(16);
 	}
 	/**
 	 * 读写超时事事件
@@ -58,20 +62,19 @@ public class ServerHandle extends ChannelInboundHandlerAdapter {
 		if(message.getContentSN()==0) {
 			System.out.println("server接收到客户端发送的心跳包");
 			//表示心跳包 服务端响应心跳包  而不做相关业务处理
-//			MessageHead head=new MessageHead();
-//			byte[] content="".getBytes();
-//			head.setCreateDate(new Date());
-//			head.setType("ping");
-//			head.setLength(content.length);
-//			Message pingMessage=new Message(head,content);
-//			head.setToken(pingMessage.buidToken());
-// 			ctx.writeAndFlush(pingMessage);
+
+			//解密心跳包
+			String xmlStr = AESUtil.decrypt(message.getContent());
+			//xml转bean
+			Notify notify = XmlUtil.XMLToJavaBean(xmlStr, Notify.class);
+
+            //发送心跳应答
 			List<String> typeList = new ArrayList<>();
 			typeList.add("heart_result");
 			HeartResultValidate id_validate = new HeartResultValidate("heart_result", "0000");
-			HeartResult heartResult = new HeartResult(new Common("330400A001", "01", typeList), id_validate);
+			HeartResult heartResult = new HeartResult(new Common(notify.getCommon().getBuilding_id(), notify.getCommon().getGateway_id(), typeList), id_validate);
 			//转换成xml字符串
-			String xmlStr = XmlUtil.beanToXml(heartResult, "UTF-8");
+			xmlStr = XmlUtil.beanToXml(heartResult, "UTF-8");
 			//AES加密
 			byte[] aesXmlBytes = AESUtil.encrypt(xmlStr);
 			//计算内容长度
@@ -87,9 +90,10 @@ public class ServerHandle extends ChannelInboundHandlerAdapter {
 		}else if(message.getContentSN()==1){
 			System.out.println("server接收到客户端发送的身份验证请求");
 			System.out.println("server向客户端发送一串随机序列");
+			randomSequence = MD5Util.getRandomSequence(16);
 			List<String> typeList = new ArrayList<>();
 			typeList.add("sequence");
-			SequenceValidate id_validate = new SequenceValidate("sequence", "1234abcd");
+			SequenceValidate id_validate = new SequenceValidate("sequence", randomSequence);
 			Sequence sequence = new Sequence(new Common("330400A001", "01", typeList), id_validate);
 			//转换成xml字符串
 			String xmlStr = XmlUtil.beanToXml(sequence, "UTF-8");
@@ -107,13 +111,23 @@ public class ServerHandle extends ChannelInboundHandlerAdapter {
 
 		}else if(message.getContentSN()==2){
 			System.out.println("server接收到客户端发送的MD5值");
+
+			String xmlStr = AESUtil.decrypt(message.getContent());
+			// xml转bean
+//			System.out.println("==================================xml转bean============================");
+			MD5 md5 = XmlUtil.XMLToJavaBean(xmlStr, MD5.class);
+			String md5Str = MD5Util.getMD5(authenticationKey + randomSequence);
+            String result = "fail";
+			if(md5Str.equals(md5.getId_validate().getMd5())){
+				result = "pass";
+			}
 			List<String> typeList = new ArrayList<>();
 			typeList.add("result");
 			typeList.add("time");
-			ResultValidate id_validate = new ResultValidate("result", "pass", "20230509152030");
+			ResultValidate id_validate = new ResultValidate("result", result, "20230509152030");
 			ResultTime resultTime = new ResultTime(new Common("330400A001", "01", typeList), id_validate);
 			//转换成xml字符串
-			String xmlStr = XmlUtil.beanToXml(resultTime, "UTF-8");
+			xmlStr = XmlUtil.beanToXml(resultTime, "UTF-8");
 			//AES加密
 			byte[] aesXmlBytes = AESUtil.encrypt(xmlStr);
 			//计算内容长度
@@ -148,7 +162,9 @@ public class ServerHandle extends ChannelInboundHandlerAdapter {
 		// TODO Auto-generated method stub
 		// super.exceptionCaught(ctx, cause);
 		ctx.close();// 发生异常关闭通信通道
+		server.removeClient(ctx); // 移除客户端
 	    System.out.println("发生异常与客户端失去连接");
+
 	   
 	    cause.printStackTrace();
 		// ctx.fireExceptionCaught(cause);pipeline可以注册多个handle 这里可以理解为是否通知下一个Handle继续处理

@@ -1,9 +1,11 @@
 package com.liqiang.xml;
 
-import javax.xml.bind.annotation.*;
-import java.util.List;
+import javax.xml.bind.annotation.XmlAccessType;
+import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
 
-@XmlRootElement(name = "common")
+@XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
 public class Data {
 
@@ -11,24 +13,10 @@ public class Data {
 
     }
 
-    public Data(String sequence, String parse, String time, String operation, List<Meter> meterList) {
-        this.sequence = sequence;
-        this.parse = parse;
-        this.time = time;
+    public Data(String operation) {
         this.operation = operation;
-        this.meterList = meterList;
     }
-
-    private String sequence;
-
-    private String parse;
-
-    private String time;
-
-    @XmlElement(name ="data")
-    private List<Meter> meterList ;
 
     @XmlAttribute(name = "operation")
     private String operation;
-//    private String id_validate;
 }
