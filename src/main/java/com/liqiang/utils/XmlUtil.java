@@ -18,7 +18,8 @@ public class XmlUtil {
 
             StringWriter writer = new StringWriter();
             marshaller.marshal(obj, writer);
-            result = writer.toString();
+            result = writer.toString().replaceAll(" standalone=\"yes\"", "");
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -42,6 +43,6 @@ public class XmlUtil {
         JAXBContext context = JAXBContext.newInstance(clazz);
         // 创建 UnMarshaller 实例
         Unmarshaller unmarshaller = context.createUnmarshaller();
-        return (T)unmarshaller.unmarshal(new StringReader(xmlStr));
+        return (T)unmarshaller.unmarshal(new StringReader(xmlStr.trim()));
     }
 }

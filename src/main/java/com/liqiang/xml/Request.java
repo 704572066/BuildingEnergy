@@ -1,9 +1,12 @@
 package com.liqiang.xml;
 
+import lombok.Getter;
+
 import javax.xml.bind.annotation.*;
 
 @XmlRootElement(name = "root")
 @XmlAccessorType(XmlAccessType.FIELD)
+@Getter
 public class Request {
 
     public Request() {

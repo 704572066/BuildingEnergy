@@ -22,17 +22,22 @@ public class AESUtil {
     private static final Logger logger = LoggerFactory.getLogger(AESUtil.class);
     private static final String defaultCharset = "UTF-8";
     private static final String KEY_AES = "AES";
-    private static final String KEY = "Kp9zhJzW!9y$$IV@";
+    private static final String KEY = "0102030405060708090a0b0c0d0e0f10";
+
+    private static final String IV = "0102030405060708090a0b0c0d0e0f10";
 
 
     private static final String ALGORITHM = "AES";
     private static final String TRANSFORMATION = "AES/CBC/PKCS5Padding";
+
+    private static final String DECRIPT_TRANSFORMATION = "AES/CBC/NoPadding";
+
     private static final String PADDING = "Zeros";
 
     public static byte[] encrypt(String plaintext) throws Exception {
         Cipher cipher = Cipher.getInstance(TRANSFORMATION);
-        SecretKeySpec secretKeySpec = new SecretKeySpec(KEY.getBytes(StandardCharsets.UTF_8), ALGORITHM);
-        IvParameterSpec ivParameterSpec = new IvParameterSpec(new byte[16]); // 初始化向量
+        SecretKeySpec secretKeySpec = new SecretKeySpec(ByteUtil.hexToByteArray(KEY), ALGORITHM);
+        IvParameterSpec ivParameterSpec = new IvParameterSpec(ByteUtil.hexToByteArray(IV)); // 初始化向量
 
         cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, ivParameterSpec);
         byte[] encryptedBytes = cipher.doFinal(plaintext.getBytes(StandardCharsets.UTF_8));
@@ -42,9 +47,9 @@ public class AESUtil {
     }
 
     public static String decrypt(byte[] ciphertext) throws Exception {
-        Cipher cipher = Cipher.getInstance(TRANSFORMATION);
-        SecretKeySpec secretKeySpec = new SecretKeySpec(KEY.getBytes(StandardCharsets.UTF_8), ALGORITHM);
-        IvParameterSpec ivParameterSpec = new IvParameterSpec(new byte[16]); // 初始化向量
+        Cipher cipher = Cipher.getInstance(DECRIPT_TRANSFORMATION);
+        SecretKeySpec secretKeySpec = new SecretKeySpec(ByteUtil.hexToByteArray(KEY), ALGORITHM);
+        IvParameterSpec ivParameterSpec = new IvParameterSpec(ByteUtil.hexToByteArray(IV)); // 初始化向量
 
         cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, ivParameterSpec);
 //        byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(ciphertext));

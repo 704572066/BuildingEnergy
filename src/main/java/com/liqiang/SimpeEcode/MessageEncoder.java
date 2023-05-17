@@ -1,5 +1,6 @@
 package com.liqiang.SimpeEcode;
 
+import com.liqiang.utils.ByteUtil;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToByteEncoder;
@@ -63,10 +64,10 @@ public class MessageEncoder extends MessageToByteEncoder<Message> {
 //		// 写入消息主体
 //		out.writeBytes(msg.getContent());
 		out.writeBytes(msg.getHEADER());
-		out.writeInt(msg.getContentLength());
-		out.writeInt(msg.getContentSN());
+		out.writeBytes(ByteUtil.intToBytesLittleEndian(msg.getContentLength()));
+		out.writeBytes(ByteUtil.intToBytesLittleEndian(msg.getContentSN()));
 		out.writeBytes(msg.getContent());
-		out.writeShort(msg.getCbc_check());
+		out.writeBytes(ByteUtil.shortToBytesLittleEndian(msg.getCbc_check()));
 		out.writeBytes(msg.getFOOTER());
 
 	}

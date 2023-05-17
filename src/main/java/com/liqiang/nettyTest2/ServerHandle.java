@@ -9,6 +9,8 @@ import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.handler.timeout.IdleState;
 import io.netty.handler.timeout.IdleStateEvent;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -59,20 +61,24 @@ public class ServerHandle extends ChannelInboundHandlerAdapter {
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 		Message message=(Message)msg;
-		if(message.getContentSN()==0) {
+		if(message.getContentSN()==2) {
 			System.out.println("server接收到客户端发送的心跳包");
 			//表示心跳包 服务端响应心跳包  而不做相关业务处理
 
 			//解密心跳包
 			String xmlStr = AESUtil.decrypt(message.getContent());
+			System.out.println(xmlStr);
 			//xml转bean
 			Notify notify = XmlUtil.XMLToJavaBean(xmlStr, Notify.class);
 
             //发送心跳应答
 			List<String> typeList = new ArrayList<>();
-			typeList.add("heart_result");
-			HeartResultValidate id_validate = new HeartResultValidate("heart_result", "0000");
-			HeartResult heartResult = new HeartResult(new Common(notify.getCommon().getBuilding_id(), notify.getCommon().getGateway_id(), typeList), id_validate);
+//			typeList.add("heart_result");
+			typeList.add("time");
+			HeartBeat heartBeat = new HeartBeat("time", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
+//			HeartResultValidate id_validate = new HeartResultValidate("heart_result", "0000");
+			TimeValidate id_validate = new TimeValidate("time", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
+			HeartResult heartResult = new HeartResult(new Common(notify.getCommon().getBuilding_id(), notify.getCommon().getGateway_id(), typeList), heartBeat);
 			//转换成xml字符串
 			xmlStr = XmlUtil.beanToXml(heartResult, "UTF-8");
 			//AES加密
@@ -80,43 +86,51 @@ public class ServerHandle extends ChannelInboundHandlerAdapter {
 			//计算内容长度
 			int contentLength = 4 + aesXmlBytes.length;
 			//计算CBC校验
-			int contentSN = 0;
+			int contentSN = 2;
 			short cbc_check = ByteUtil.reverseBytes(CBCUtil.calculateCBCChecksum(ByteUtil.byteMerger(ByteUtil.intToBytesBigEndian(contentSN), aesXmlBytes)));
 			//心跳消息构建
-			Message heartResultMessage = new Message(contentLength, 0, aesXmlBytes, cbc_check);
+			Message heartResultMessage = new Message(contentLength, contentSN, aesXmlBytes, cbc_check);
 //			HeartResult heartResult = new HeartResult()
 			ctx.writeAndFlush(heartResultMessage);
 
-		}else if(message.getContentSN()==1){
+		}else if(message.getContentSN()==0){
 			System.out.println("server接收到客户端发送的身份验证请求");
+
+			//解密身份验证请求包
+			String xmlStr = AESUtil.decrypt(message.getContent());
+			System.out.println(xmlStr);
+			//xml转bean
+			Request request = XmlUtil.XMLToJavaBean(xmlStr, Request.class);
+
+
 			System.out.println("server向客户端发送一串随机序列");
 			randomSequence = MD5Util.getRandomSequence(16);
 			List<String> typeList = new ArrayList<>();
 			typeList.add("sequence");
 			SequenceValidate id_validate = new SequenceValidate("sequence", randomSequence);
-			Sequence sequence = new Sequence(new Common("330400A001", "01", typeList), id_validate);
+			Sequence sequence = new Sequence(new Common(request.getCommon().getBuilding_id(), request.getCommon().getGateway_id(), typeList), id_validate);
 			//转换成xml字符串
-			String xmlStr = XmlUtil.beanToXml(sequence, "UTF-8");
+			xmlStr = XmlUtil.beanToXml(sequence, "UTF-8");
 			//AES加密
 			byte[] aesXmlBytes = AESUtil.encrypt(xmlStr);
 			//计算内容长度
 			int contentLength = 4 + aesXmlBytes.length;
 			//计算CBC校验
-			int contentSN = 1;
+			int contentSN = 0;
 			short cbc_check = ByteUtil.reverseBytes(CBCUtil.calculateCBCChecksum(ByteUtil.byteMerger(ByteUtil.intToBytesBigEndian(contentSN), aesXmlBytes)));
-			//心跳消息构建
+			//随机序列消息构建
 			Message sequenceMessage = new Message(contentLength, contentSN, aesXmlBytes, cbc_check);
 //			HeartResult heartResult = new HeartResult()
 			ctx.writeAndFlush(sequenceMessage);
 
-		}else if(message.getContentSN()==2){
+		}else if(message.getContentSN()==1){
 			System.out.println("server接收到客户端发送的MD5值");
 
 			String xmlStr = AESUtil.decrypt(message.getContent());
 			// xml转bean
 //			System.out.println("==================================xml转bean============================");
 			MD5 md5 = XmlUtil.XMLToJavaBean(xmlStr, MD5.class);
-			String md5Str = MD5Util.getMD5(authenticationKey + randomSequence);
+			String md5Str = MD5Util.getMD5(randomSequence+authenticationKey);
             String result = "fail";
 			if(md5Str.equals(md5.getId_validate().getMd5())){
 				result = "pass";
@@ -124,8 +138,8 @@ public class ServerHandle extends ChannelInboundHandlerAdapter {
 			List<String> typeList = new ArrayList<>();
 			typeList.add("result");
 			typeList.add("time");
-			ResultValidate id_validate = new ResultValidate("result", result, "20230509152030");
-			ResultTime resultTime = new ResultTime(new Common("330400A001", "01", typeList), id_validate);
+			ResultValidate id_validate = new ResultValidate("result", result, LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMddHHmmss")));
+			ResultTime resultTime = new ResultTime(new Common(md5.getCommon().getBuilding_id(), md5.getCommon().getGateway_id(), typeList), id_validate);
 			//转换成xml字符串
 			xmlStr = XmlUtil.beanToXml(resultTime, "UTF-8");
 			//AES加密
@@ -133,7 +147,7 @@ public class ServerHandle extends ChannelInboundHandlerAdapter {
 			//计算内容长度
 			int contentLength = 4 + aesXmlBytes.length;
 			//计算CBC校验
-			int contentSN = 2;
+			int contentSN = 1;
 			short cbc_check = ByteUtil.reverseBytes(CBCUtil.calculateCBCChecksum(ByteUtil.byteMerger(ByteUtil.intToBytesBigEndian(contentSN), aesXmlBytes)));
 			//心跳消息构建
 			Message resultTimeMessage = new Message(contentLength, contentSN, aesXmlBytes, cbc_check);
@@ -150,6 +164,8 @@ public class ServerHandle extends ChannelInboundHandlerAdapter {
 			System.out.println("server接收到客户端发送的监测数据:" + xmlStr);
 		}else {
 			System.out.println("server接收到客户端发送信息:" + msg.toString());
+			String xmlStr = AESUtil.decrypt(message.getContent());
+			System.out.println(xmlStr);
 		}
 		// TODO Auto-generated method stub
 		

@@ -9,6 +9,17 @@ import javax.xml.bind.annotation.XmlRootElement;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class HeartBeat {
 
+    public HeartBeat() {
+
+    }
+
+    public HeartBeat(String operation, String time) {
+        this.operation = operation;
+        this.time = time;
+    }
+
     @XmlAttribute(name = "operation")
     private String operation = "notify";
+
+    private String time;
 }
