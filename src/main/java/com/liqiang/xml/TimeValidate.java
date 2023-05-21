@@ -6,16 +6,16 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
 @XmlAccessorType(XmlAccessType.FIELD)
-public class HeartResultValidate extends Validate {
+public class TimeValidate extends Validate {
 
-    public HeartResultValidate() {
+    public TimeValidate() {
 
     }
 
-    public HeartResultValidate(String operation, String heart_result) {
+    public TimeValidate(String operation, String time) {
         super(operation);
-        this.heart_result = heart_result;
+        this.time = time;
     }
 
-    private String heart_result;
+    private String time;
 }

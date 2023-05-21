@@ -13,14 +13,14 @@ public class HeartResult {
 
     }
 
-    public HeartResult(Common common, HeartResultValidate id_validate) {
+    public HeartResult(Common common, HeartBeat heart_beat) {
         this.common = common;
-        this.id_validate = id_validate;
+        this.heart_beat = heart_beat;
     }
 
     @XmlElement(name = "common")
     private Common common;
 
-    @XmlElement(name = "id_validate")
-    private HeartResultValidate id_validate;
+    @XmlElement(name = "heart_beat")
+    private HeartBeat heart_beat;
 }
