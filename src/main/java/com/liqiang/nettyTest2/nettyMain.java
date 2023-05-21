@@ -7,8 +7,13 @@ public class nettyMain {
 			@Override
 			public void run() {
 				// TODO Auto-generated method stub
+<<<<<<< HEAD
 //				Server server = new Server(8089);
 //				server.startServer();
+=======
+				Server server = new Server(8089);
+				server.startServer();
+>>>>>>> origin/master
 
 			}
 		}).start();
