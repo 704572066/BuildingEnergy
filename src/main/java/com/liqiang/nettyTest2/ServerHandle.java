@@ -19,7 +19,6 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
 import org.springframework.stereotype.Component;
 
-<<<<<<< HEAD
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -28,13 +27,6 @@ import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadPoolExecutor;
 import org.apache.kafka.clients.producer.ProducerConfig;
-=======
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
->>>>>>> origin/master
 
 @Component
 public class ServerHandle extends ChannelInboundHandlerAdapter {
@@ -54,7 +46,7 @@ public class ServerHandle extends ChannelInboundHandlerAdapter {
 //	@Value("${flink_streaming}")
 //	private String topic1;
 
-//	@Autowired
+	//	@Autowired
 	ThreadPoolExecutor threadPoolExecutor;
 
 	public ServerHandle(Server server) {
@@ -73,13 +65,13 @@ public class ServerHandle extends ChannelInboundHandlerAdapter {
 			IdleStateEvent event=(IdleStateEvent)evt;
 			//如果读超时
 			if(event.state()==IdleState.READER_IDLE) {
-			        System.out.println("有客户端超时了");
-			        ctx.channel().close();//关闭连接
+				System.out.println("有客户端超时了");
+				ctx.channel().close();//关闭连接
 			}
 		}else {
 			super.userEventTriggered(ctx, evt);
 		}
-		
+
 	}
 
 	// 建立连接时回调
@@ -105,7 +97,7 @@ public class ServerHandle extends ChannelInboundHandlerAdapter {
 			//xml转bean
 			Notify notify = XmlUtil.XMLToJavaBean(xmlStr, Notify.class);
 
-            //发送心跳应答
+			//发送心跳应答
 			List<String> typeList = new ArrayList<>();
 //			typeList.add("heart_result");
 			typeList.add("time");
@@ -165,7 +157,7 @@ public class ServerHandle extends ChannelInboundHandlerAdapter {
 //			System.out.println("==================================xml转bean============================");
 			MD5 md5 = XmlUtil.XMLToJavaBean(xmlStr, MD5.class);
 			String md5Str = MD5Util.getMD5(randomSequence+authenticationKey);
-            String result = "fail";
+			String result = "fail";
 			if(md5Str.equals(md5.getId_validate().getMd5())){
 				result = "pass";
 			}
@@ -203,7 +195,7 @@ public class ServerHandle extends ChannelInboundHandlerAdapter {
 			System.out.println(xmlStr);
 		}
 		// TODO Auto-generated method stub
-		
+
 		// ctx.fireChannelRead(msg);pipeline可以注册多个handle 这里可以理解为是否通知下一个Handle继续处理
 	}
 
@@ -214,17 +206,17 @@ public class ServerHandle extends ChannelInboundHandlerAdapter {
 		// super.exceptionCaught(ctx, cause);
 		ctx.close();// 发生异常关闭通信通道
 		server.removeClient(ctx); // 移除客户端
-	    System.out.println("发生异常与客户端失去连接");
+		System.out.println("发生异常与客户端失去连接");
 
-	   
-	    cause.printStackTrace();
+
+		cause.printStackTrace();
 		// ctx.fireExceptionCaught(cause);pipeline可以注册多个handle 这里可以理解为是否通知下一个Handle继续处理
 	}
 
 
 	private void writeToKafka(String key, String content) {
 //		if (key.equals(topic1)) {
-			kafkaTemplate.send(key, content);
+		kafkaTemplate.send(key, content);
 //		}
 	}
 
