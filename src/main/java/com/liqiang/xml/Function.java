@@ -38,6 +38,10 @@ public class Function {
     @XmlAttribute(name = "sample_time")
     private String sample_time;
 
+    public String getSample_value() {
+        return value;
+    }
+
     @XmlValue
     private String value;
 }

@@ -8,17 +8,26 @@ import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
+import lombok.Setter;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.net.InetSocketAddress;
 import java.util.Vector;
 
+@Component
+@ConfigurationProperties(prefix = "netty")
+@Setter
 public class Server implements Runnable {
+//	@Value("${netty.port}")
 	private int port;// 监听端口
 	private Vector<ChannelHandlerContext> clients;// 保存在线客户端信息
 
-	public Server(int port) {
+	public Server() {
 		clients = new Vector<ChannelHandlerContext>();
-		this.port = port;
+//		this.port = port;
 	}
 
 	// 广播
@@ -67,7 +76,7 @@ public class Server implements Runnable {
 		}
 
 	}
-
+	@PostConstruct
 	public void startServer() {
 		new Thread(this).start();
 	}

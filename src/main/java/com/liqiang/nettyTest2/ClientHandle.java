@@ -71,10 +71,10 @@ public class ClientHandle extends ChannelInboundHandlerAdapter {
 				//计算内容长度
 				int contentLength = 4 + aesXmlBytes.length;
 				//计算CBC校验
-				int contentSN = 0;
+				int contentSN = 2;
 				short cbc_check = ByteUtil.reverseBytes(CBCUtil.calculateCBCChecksum(ByteUtil.byteMerger(ByteUtil.intToBytesBigEndian(contentSN), aesXmlBytes)));
                 //心跳消息构建
-				Message heartBeatMessage = new Message(contentLength, 0, aesXmlBytes, cbc_check);
+				Message heartBeatMessage = new Message(contentLength, 2, aesXmlBytes, cbc_check);
 	 			ctx.writeAndFlush(heartBeatMessage);
 	        }
 		}else {
@@ -114,7 +114,7 @@ public class ClientHandle extends ChannelInboundHandlerAdapter {
 	@Override
 	public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
 		Message message=(Message) msg;
-		if(message.getContentSN()==0) {
+		if(message.getContentSN()==2) {
 			//表示是心跳包 不做任何业务处理
 			System.out.println("服务器有响应");
 		}else if(message.getContentSN()==1) {

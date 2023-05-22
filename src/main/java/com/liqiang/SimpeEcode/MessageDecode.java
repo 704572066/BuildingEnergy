@@ -49,10 +49,19 @@ public class MessageDecode extends ByteToMessageDecoder{
                 return;  
             }  
 		}
-		   // 消息的长度  
-        int length = buffer.readInt();  
+//        buffer.resetReaderIndex();
+        int readableLength  = buffer.readableBytes();
+//        byte[] re  = new byte[readableLength];
+//        buffer.readBytes(re);
+//        System.out.println(buffer.toString());
+        //读取消息长度
+        byte[] lengthBytes = new byte[4];
+        buffer.readBytes(lengthBytes);
+//        int length = buffer.readInt();
+        int length = ByteUtil.bytesToIntLittleEndian(lengthBytes);
+        int re  = buffer.readableBytes();
         // 判断请求数据包数据是否到齐   -150是消息头的长度。
-        if ((buffer.readableBytes()-16) < length) {
+        if ((buffer.readableBytes()-6) < length) {
             //没有到齐 返回读的指针 等待下一次数据到期再读
             buffer.readerIndex(beginIndex);  
             return;  
@@ -67,13 +76,18 @@ public class MessageDecode extends ByteToMessageDecoder{
 //        //读取令牌生成时间
 //        byte[]createDateByte=new byte[50];
 //        buffer.readBytes(createDateByte);
-        //读取contentSN
-        int contentSN = buffer.readInt();
+        //读取指令序号contentSN
+//        int contentSN = buffer.readInt();
+        byte[] contentSNBytes = new byte[4];
+        buffer.readBytes(contentSNBytes);
+        int contentSN = ByteUtil.bytesToIntLittleEndian(contentSNBytes);
         //读取content
-        byte[] data = new byte[length-4];
-        buffer.readBytes(data);
+        byte[] content = new byte[length-4];
+        buffer.readBytes(content);
         //读取CBC校验
-        short cbc_check = buffer.readShort();
+        byte[] cbc_CheckBytes = new byte[2];
+        buffer.readBytes(cbc_CheckBytes);
+        short cbc_check = ByteUtil.bytesToShortLittleEndian(cbc_CheckBytes);
         //读取footer
         buffer.readInt();
 //        MessageHead head=new MessageHead();
@@ -90,9 +104,7 @@ public class MessageDecode extends ByteToMessageDecoder{
 //
 //        	return;
 //        }
-        Message message = new Message(length, contentSN, data, cbc_check);
-//        message.setCbc_check(cbc_check);
-//        message.setContentLength(length);
+        Message message = new Message(length, contentSN, content, cbc_check);
         out.add(message);
         buffer.discardReadBytes();//回收已读字节
 	}
