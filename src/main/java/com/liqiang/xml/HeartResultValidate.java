@@ -12,10 +12,10 @@ public class HeartResultValidate extends Validate {
 
     }
 
-    public HeartResultValidate(String operation, String heartResult) {
+    public HeartResultValidate(String operation, String heart_result) {
         super(operation);
-        this.heartResult = heartResult;
+        this.heart_result = heart_result;
     }
 
-    private String heartResult;
+    private String heart_result;
 }
