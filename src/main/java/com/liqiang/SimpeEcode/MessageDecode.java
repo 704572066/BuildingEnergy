@@ -18,21 +18,26 @@ public class MessageDecode extends ByteToMessageDecoder{
 	
 	@Override
 	protected void decode(ChannelHandlerContext ctx, ByteBuf buffer, List<Object> out) throws Exception {
+        if (buffer.readableBytes() < 4) {
+            // we need to have at least 4 bytes to read to be able to get the message length
+            return;
+        }
 		// 刻度长度必须大于基本长度
 		if(buffer.readableBytes()>=BASE_LENGTH) {
 			/**
 			 * 粘包 发送频繁 可能多次发送黏在一起 需要考虑  不过一个客户端发送太频繁也可以推断是否是攻击
 			 */
 			//防止soket流攻击。客户端传过来的数据太大不合理
-			if(buffer.readableBytes()>2048) {
-				//buffer.skipBytes(buffer.readableBytes());
+			if(buffer.readableBytes()>81920) {
+				buffer.skipBytes(buffer.readableBytes());
 				
 			}
 		}
 		int beginIndex;//记录包开始位置
 		while(true) {
 			  // 获取包头开始的index  
-			beginIndex = buffer.readerIndex();  
+			beginIndex = buffer.readerIndex();
+            buffer.markReaderIndex();
 			//如果读到开始标记位置 结束读取避免拆包和粘包
             int head = buffer.readInt();
 //            int little_head = ByteUtil.bytesToIntLittleEndian(HEADER);
@@ -42,7 +47,8 @@ public class MessageDecode extends ByteToMessageDecoder{
 			}
 			 
 			//初始化读的index为0
-            buffer.resetReaderIndex();  
+            buffer.resetReaderIndex();
+            buffer.readByte();
             // 当略过，一个字节之后，  
             //如果当前buffer数据小于基础数据 返回等待下一次读取
             if (buffer.readableBytes() < BASE_LENGTH) {  
@@ -80,16 +86,20 @@ public class MessageDecode extends ByteToMessageDecoder{
 //        int contentSN = buffer.readInt();
         byte[] contentSNBytes = new byte[4];
         buffer.readBytes(contentSNBytes);
+        System.out.println("contentSNBytes: "+ ByteUtil.bytesToHex(contentSNBytes));
         int contentSN = ByteUtil.bytesToIntLittleEndian(contentSNBytes);
         //读取content
         byte[] content = new byte[length-4];
         buffer.readBytes(content);
+
+//        content = toHexString1(content).getBytes("GB2312");
         //读取CBC校验
         byte[] cbc_CheckBytes = new byte[2];
         buffer.readBytes(cbc_CheckBytes);
         short cbc_check = ByteUtil.bytesToShortLittleEndian(cbc_CheckBytes);
         //读取footer
-        buffer.readInt();
+//        buffer.readInt();
+        System.out.println("FOOTER: "+ buffer.readInt());
 //        MessageHead head=new MessageHead();
 //        head.setHeadData(headData);
 //        head.setToken(new String(tokenByte).trim());
@@ -108,6 +118,22 @@ public class MessageDecode extends ByteToMessageDecoder{
         out.add(message);
         buffer.discardReadBytes();//回收已读字节
 	}
-	
+
+    public static String toHexString1(byte[] b) {
+        StringBuffer buffer = new StringBuffer();
+        for (int i = 0; i < b.length; ++i) {
+            buffer.append(toHexString1(b[i]));
+        }
+        return buffer.toString();
+    }
+
+    public static String toHexString1(byte b) {
+        String s = Integer.toHexString(b & 0xFF);
+        if (s.length() == 1) {
+            return "0" + s.toUpperCase();
+        } else {
+            return s.toUpperCase();
+        }
+    }
 
 }

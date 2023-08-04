@@ -65,9 +65,14 @@ public class MessageEncoder extends MessageToByteEncoder<Message> {
 //		out.writeBytes(msg.getContent());
 		out.writeBytes(msg.getHEADER());
 		out.writeBytes(ByteUtil.intToBytesLittleEndian(msg.getContentLength()));
+		System.out.println("encode Length: "+ByteUtil.bytesToHex(ByteUtil.intToBytesLittleEndian(msg.getContentLength())));
 		out.writeBytes(ByteUtil.intToBytesLittleEndian(msg.getContentSN()));
+		System.out.println("encode SN: "+ByteUtil.bytesToHex(ByteUtil.intToBytesLittleEndian(msg.getContentSN())));
+//		out.writeBytes(ByteUtil.intTobytes());
 		out.writeBytes(msg.getContent());
+		System.out.println("encode Content: "+ByteUtil.bytesToHex(msg.getContent()));
 		out.writeBytes(ByteUtil.shortToBytesLittleEndian(msg.getCbc_check()));
+		System.out.println("encode CBC: "+ByteUtil.bytesToHex(ByteUtil.shortToBytesLittleEndian(msg.getCbc_check())));
 		out.writeBytes(msg.getFOOTER());
 
 	}

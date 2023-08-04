@@ -52,6 +52,15 @@ public class ByteUtil {
         return bytes;
     }
 
+    public static byte[] intTobytes(){
+        byte[] bytes = new byte[Integer.BYTES];
+        bytes[3] = (byte) (0);
+        bytes[2] = (byte) (0);
+        bytes[1] = (byte) (1);
+        bytes[0] = (byte) (0);
+        return bytes;
+    }
+
     /*小端，低字节在后*/
     public static byte[] intToBytesLittleEndian(int intValue) {
         // byte数组中序号小的在右边
@@ -80,6 +89,15 @@ public class ByteUtil {
         System.arraycopy(bt1, 0, bt3, 0, bt1.length);
         System.arraycopy(bt2, 0, bt3, bt1.length, bt2.length);
         return bt3;
+    }
+
+    public static String bytesToHex(byte[] bytes) {
+        StringBuilder buf = new StringBuilder(bytes.length * 2);
+        for(byte b : bytes) { // 使用String的format方法进行转换
+            buf.append(String.format("%02x", new Integer(b & 0xff)));
+        }
+
+        return buf.toString();
     }
 
 

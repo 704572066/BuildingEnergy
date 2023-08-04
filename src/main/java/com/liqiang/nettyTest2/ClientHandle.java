@@ -147,7 +147,7 @@ public class ClientHandle extends ChannelInboundHandlerAdapter {
 			// xml转bean
 //			System.out.println("==================================xml转bean============================");
 			ResultTime resultTime = XmlUtil.XMLToJavaBean(xmlStr,ResultTime.class);
-			System.out.println("收到验证结果: " + resultTime.getId_validate().getResult());
+//			System.out.println("收到验证结果: " + resultTime.getId_validate().getResult());
 			// 定时任务，每隔一段时间发送消息
 			timer.newTimeout(new ReportDataTask(timer, client.getServerChannel().channel()), INTERVAL_SECONDS, TimeUnit.SECONDS);
 

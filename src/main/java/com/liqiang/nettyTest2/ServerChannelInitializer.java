@@ -4,8 +4,10 @@ import com.liqiang.SimpeEcode.MessageDecode;
 import com.liqiang.SimpeEcode.MessageEncoder;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.socket.SocketChannel;
+import io.netty.handler.codec.string.StringDecoder;
 import io.netty.handler.timeout.IdleStateHandler;
 
+import java.nio.charset.Charset;
 import java.util.concurrent.TimeUnit;
 
 public class ServerChannelInitializer extends ChannelInitializer<SocketChannel> {
@@ -20,6 +22,7 @@ public class ServerChannelInitializer extends ChannelInitializer<SocketChannel> 
 		channel.pipeline()
 		//7秒没收到客户端信息 则表示客户端因为网络等原因异常关闭 
 	    .addLast("ping",new IdleStateHandler(120, 0, 0,TimeUnit.SECONDS))
+//		.addLast(new StringDecoder(Charset.forName("UTF-8")))
 		.addLast("decoder",new MessageDecode())
 		.addLast("encoder",new MessageEncoder())
 		.addLast(new ServerHandle(server));

@@ -9,8 +9,10 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
+import java.lang.reflect.Array;
 import java.nio.charset.StandardCharsets;
 import java.security.SecureRandom;
+import java.util.Arrays;
 import java.util.Base64;
 
 
@@ -47,6 +49,7 @@ public class AESUtil {
     }
 
     public static String decrypt(byte[] ciphertext) throws Exception {
+        System.out.println(Arrays.toString(ciphertext));
         Cipher cipher = Cipher.getInstance(DECRIPT_TRANSFORMATION);
         SecretKeySpec secretKeySpec = new SecretKeySpec(ByteUtil.hexToByteArray(KEY), ALGORITHM);
         IvParameterSpec ivParameterSpec = new IvParameterSpec(ByteUtil.hexToByteArray(IV)); // 初始化向量
@@ -54,7 +57,9 @@ public class AESUtil {
         cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, ivParameterSpec);
 //        byte[] decryptedBytes = cipher.doFinal(Base64.getDecoder().decode(ciphertext));
         byte[] decryptedBytes = cipher.doFinal(ciphertext);
-        return new String(decryptedBytes, StandardCharsets.UTF_8);
+        System.out.println("decryptedBytes: "+Arrays.toString(decryptedBytes));
+//        return new String(decryptedBytes, StandardCharsets.UTF_8);
+        return new String(decryptedBytes, "GB2312");
     }
 
     /**
